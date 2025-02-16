@@ -1,29 +1,31 @@
 
 package model;
 
-public class FeastMenu implements Comparable<FeastMenu>{
-    private String code;
+import java.io.Serializable;
+
+public class FeastMenu implements Comparable<FeastMenu>, Serializable {
+    private String menuCode;
     private String name;
     private String price;
     private String ingredient;
 
     public FeastMenu() {}
 
-    public FeastMenu(String code, String name, String price, String ingredient) {
-        this.code = code;
+    public FeastMenu(String menuCode, String name, String price, String ingredient) {
+        this.menuCode = menuCode;
         this.name = name;
         this.price = price;
         this.ingredient = ingredient;
     }
 
-    public String getCode() {
-        return code;
+    public String getMenuCode() {
+        return menuCode;
     }
 
-    public void setCode(String code) {
-        this.code = code;
+    public void setMenuCode(String menuCode) {
+        this.menuCode = menuCode;
     }
-
+    
     public String getName() {
         return name;
     }
@@ -50,7 +52,7 @@ public class FeastMenu implements Comparable<FeastMenu>{
 
     @Override
     public String toString() {
-        return String.format("%s,%s,%s,%s", code,name,price,ingredient);
+        return String.format("%s,%s,%s,%s", menuCode,name,price,ingredient);
     }
     
     @Override

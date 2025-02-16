@@ -3,13 +3,15 @@ package collection;
 import java.util.ArrayList;
 import model.FeastMenu;
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.Collections;
 
 public class FeastMenuList {
 
-    public static ArrayList<FeastMenu> feastMenuList = new ArrayList<>();
+    public static ArrayList<FeastMenu> feastMenus = new ArrayList<>();
 
     public static FeastMenu dataToObject(String line) {
         String[] parts = line.split(",", -1);
@@ -30,32 +32,51 @@ public class FeastMenuList {
             while ((line = br.readLine()) != null) {
                 FeastMenu feastMenu = dataToObject(line);
                 if (feastMenu != null) {
-                    feastMenuList.add(feastMenu);
+                    feastMenus.add(feastMenu);
                 }
             }
+            System.out.println("Load data from 'FeastMenu.csv' successfully.");
+        } catch (FileNotFoundException e) {
+            System.out.println("Can not find 'FeastMenu.csv' file.");
         } catch (IOException e) {
             System.out.println("Cannot read data from feastMenu.csv. Please check it.");
         }
-        Collections.sort(feastMenuList);
-        return feastMenuList;
+        Collections.sort(feastMenus);
+        return feastMenus;
+    }
+    
+    public static String formatIngredient(String text) {
+        text = text.replaceAll("\"", "");
+        text = text.replaceAll("\\#", "\n");
+        return text;
     }
 
     public static void showAll() {
         System.out.println("------------------------------------------------------------------------");
         System.out.println("List of Set Menus for ordering party:");
         System.out.println("------------------------------------------------------------------------");
-        for (FeastMenu x : feastMenuList) {
-            System.out.println("Code       : " + x.getCode());
-            System.out.println("Name       : " + x.getName());
-            System.out.println("Price      : " + x.getPrice());
-            System.out.println("Ingredients: \n" + formatIngredient(x.getIngredient()));
+        for (FeastMenu fm : feastMenus) {
+            System.out.println("Code       : " + fm.getMenuCode());
+            System.out.println("Name       : " + fm.getName());
+            System.out.println("Price      : " + formatPrice(Double.parseDouble(fm.getPrice())));
+            System.out.println("Ingredients: \n" + formatIngredient(fm.getIngredient()));
             System.out.println("------------------------------------------------------------------------");
         }
     }
-
-    public static String formatIngredient(String text) {
-        text = text.replaceAll("\"", "");
-        text = text.replaceAll("\\#", "\n");
-        return text;
+    
+    public static String formatPrice(double price) {
+        DecimalFormat decimalFormat = new DecimalFormat("#,###");
+        String finalPrice = decimalFormat.format(price);
+        return finalPrice;
+    }
+    
+    public static FeastMenu findFeastMenuByCode(String setMenuCode) {
+        for (FeastMenu fm : feastMenus) {
+            if (setMenuCode.equalsIgnoreCase(fm.getMenuCode())) {
+                return fm;
+            }
+        }
+        System.out.println("LỒN DANH");
+        return null;
     }
 }
