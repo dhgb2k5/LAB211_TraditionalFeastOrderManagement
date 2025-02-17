@@ -14,9 +14,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.InputMismatchException;
 
 public class Inputter {
-    
+
     public static int choice;
-    
+
     public static boolean isValid(String input, String pattern) {
         return input.matches(pattern);
     }
@@ -37,7 +37,7 @@ public class Inputter {
         while (true) {
             try {
                 Menu.chooseEvent();
-                System.out.println("Enter your choice (1-3):");
+                System.out.print("Enter your choice (1-3): ");
                 int choice = sc.nextInt();
                 switch (choice) {
                     case 1:
@@ -64,58 +64,52 @@ public class Inputter {
     }
 
     public static String inputName() {
-        String name = "";
         Scanner sc = new Scanner(System.in);
         while (true) {
-            System.out.println("Enter name:");
-            name = sc.nextLine();
+            System.out.print("Enter name: ");
+            String name = sc.nextLine();
 
             if (isValid(name, Acceptable.NAME_VALID)) {
-                break;
+                return name;
             } else {
                 System.out.println("Your name is invalid, try again.");
             }
         }
-        return name;
     }
 
     public static String inputPhoneNumber() {
-        String phoneNumber = "";
         Scanner sc = new Scanner(System.in);
         while (true) {
-            System.out.println("Enter phone number:");
-            phoneNumber = sc.nextLine();
+            System.out.print("Enter phone number: ");
+            String phoneNumber = sc.nextLine();
             if (isValid(phoneNumber, Acceptable.PHONE_VALID) && isValidPhoneNumber(phoneNumber)) {
-                break;
+                return phoneNumber;
             } else if (isValidPhoneNumber(phoneNumber) == false) {
                 System.out.println("Your phone number is dupplicated, try again.");
             } else {
                 System.out.println("Your phone number is invalid, try again.");
             }
         }
-        return phoneNumber;
     }
 
     public static String inputEmail() {
-        String email = "";
         Scanner sc = new Scanner(System.in);
         while (true) {
-            System.out.println("Enter email:");
-            email = sc.nextLine();
+            System.out.print("Enter email: ");
+            String email = sc.nextLine();
             if (isValid(email, Acceptable.EMAIL_VALID)) {
-                break;
+                return email;
             } else {
                 System.out.println("Your email is invalid, try again.");
             }
         }
-        return email;
     }
 
     public static String findCustomerCode() {
         Scanner sc = new Scanner(System.in);
         String cusCode = "";
         while (true) {
-            System.out.println("Enter customer code:");
+            System.out.print("Enter customer code: ");
             String code = sc.nextLine();
             for (Customer ct : CustomerList.customers) {
                 if (code.equalsIgnoreCase(ct.getCustomerCode())) {
@@ -133,7 +127,7 @@ public class Inputter {
         Scanner sc = new Scanner(System.in);
         String setCode = "";
         while (true) {
-            System.out.println("Enter set menu:");
+            System.out.print("Enter set menu (PW001 - PW006): ");
             String toCheck = sc.nextLine();
             for (FeastMenu fm : FeastMenuList.feastMenus) {
                 if (toCheck.equalsIgnoreCase(fm.getMenuCode())) {
@@ -153,7 +147,7 @@ public class Inputter {
         int table = 0;
         while (true) {
             try {
-                System.out.println("Enter the number of tables:");
+                System.out.print("Enter the number of tables: ");
                 table = sc.nextInt();
                 sc.nextLine();
                 if (table > 0) {
@@ -170,19 +164,17 @@ public class Inputter {
     }
 
     public static String inputDate() {
-        String date = "";
         Scanner sc = new Scanner(System.in);
         while (true) {
             try {
-
                 System.out.println("Enter the date follow the format 'dd/MM/yyyy' to hold the event: ");
-                date = sc.nextLine();
+                String date = sc.nextLine();
 
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
                 LocalDate inputDate = LocalDate.parse(date, formatter);
 
                 if (inputDate.isAfter(LocalDate.now())) {
-                    break;
+                    return date;
                 } else if (inputDate.isBefore(LocalDate.now())) {
                     System.out.println("The date must be after today, try again.");
                 } else {
@@ -192,7 +184,6 @@ public class Inputter {
                 System.out.println("Invalid date format, try again.");
             }
         }
-        return date;
     }
 
     public static String getAnswer() {
@@ -210,7 +201,7 @@ public class Inputter {
                 System.out.println("1. Display Customers List");
                 System.out.println("2. Display Orders List");
                 System.out.println("==============================");
-                System.out.println("Choose table to display (1 or 2): ");
+                System.out.print("Choose table to display (1 or 2): ");
                 int choice = sc.nextInt();
                 sc.nextLine();
 

@@ -21,7 +21,7 @@ public class main {
 
             try {
                 Menu.function();
-                System.out.println("Enter your function (1-8):");
+                System.out.print("Enter your function (1-8): ");
                 choice = sc.nextInt();
                 
                 switch (choice) {
@@ -44,8 +44,8 @@ public class main {
                         FeastOrderList.updateOrderInformation();
                         break;
                     case 7:
-                        CustomerList.writeToFile();
-                        FeastOrderList.writeToFile();
+                        CustomerList.saveData();
+                        FeastOrderList.saveData();
                         break;
                     case 8:
                         Inputter.displayFile();

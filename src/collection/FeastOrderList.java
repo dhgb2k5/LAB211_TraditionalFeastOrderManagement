@@ -14,6 +14,7 @@ import model.FeastOrder;
 import tool.Inputter;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Collections;
 import java.util.InputMismatchException;
 
@@ -23,73 +24,84 @@ public class FeastOrderList implements Serializable {
     public static boolean isSaved = true;
 
     public static boolean isValidDate(String date) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        LocalDate dateToCheck = LocalDate.parse(date, formatter);
-        if (dateToCheck.isAfter(LocalDate.now())) {
+        try {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            LocalDate dateToCheck = LocalDate.parse(date, formatter);
+
+            if (dateToCheck.isEqual(LocalDate.now())) {
+                System.out.println("This order comes today, can not modify.");
+                return false;
+            } else if (dateToCheck.isBefore(LocalDate.now())) {
+                System.out.println("Invalid date.");
+            }
             return true;
-        } else if (dateToCheck.isEqual(LocalDate.now())) {
-            System.out.println("This feast order comes today, cannot modify! Try another one.");
-            return false;
-        } else {
-            System.out.println("Invalid date, try again.");
+        } catch (DateTimeParseException e) {
+            System.out.println("Invalid date format, must be dd/MM/yyyy.");
             return false;
         }
     }
 
     public static void addOrder() {
-
-        String customerCode = Inputter.findCustomerCode();
-        String setMenuCode = Inputter.findSetMenuCode();
-
-        FeastMenu toOrder = FeastMenuList.findFeastMenuByCode(setMenuCode);
-        
-        double priceOfSet = Double.parseDouble(toOrder.getPrice());
-        String setPrice = FeastMenuList.formatPrice(priceOfSet);
-        
-        
-        int quantity = Inputter.quantity();
-        String date = Inputter.inputDate();
-
-        String totalCost = FeastMenuList.formatPrice(calculateTotalCost(setMenuCode, quantity));
-
-        int orderID = 0;
-        for (FeastOrder fo : feastorders) {
-            if (fo.getOrderID() > orderID) {
-                orderID = fo.getOrderID();
-            }
-        }
-        orderID++;
-        System.out.println(priceOfSet);
-        FeastOrder newOrder = new FeastOrder(customerCode, date, setMenuCode, setPrice, quantity, orderID, totalCost);
-        feastorders.add(newOrder);
-
-        System.out.println("------------------------------------------------------------------------");
-        System.out.println("Customer order information  [Order ID: " + newOrder.getOrderID() + "]");
-        System.out.println("------------------------------------------------------------------------");
-        CustomerList.showCustomer(customerCode);
-        System.out.println("------------------------------------------------------------------------");
-        System.out.println("Code of Set Menu: " + newOrder.getSetMenuCode());
-        System.out.println("Set menu name   : " + toOrder.getName());
-        System.out.println("Event date      : " + newOrder.getDate());
-        System.out.println("Number of tables: " + newOrder.getNumberOfTable());
-        System.out.println("Price           : " + FeastMenuList.formatPrice(Double.parseDouble(toOrder.getPrice())) + " Vnd");
-        System.out.println("Ingredients     : \n" + FeastMenuList.formatIngredient(toOrder.getIngredient()));
-        System.out.println("------------------------------------------------------------------------");
-        System.out.println("Total cost      : " + newOrder.getTotalCost() + " Vnd");
-        System.out.println("------------------------------------------------------------------------");
-        
-        Scanner sc = new Scanner(System.in);
         while (true) {
-            System.out.println("Do you want to place another order? (Y/N)");
-            String answer = sc.nextLine();
-            if (answer.equalsIgnoreCase("Y")) {
-                addOrder();
-                break;
-            } else if (answer.equalsIgnoreCase("N")) {
-                System.out.println("You are back to main menu.");
-                break;
+            String customerCode = Inputter.findCustomerCode();
+
+            FeastMenuList.displayFeastMenu();
+            String setMenuCode = Inputter.findSetMenuCode();
+            FeastMenu toOrder = FeastMenuList.findFeastMenuByCode(setMenuCode);
+
+            String date = Inputter.inputDate();
+
+            if (checkDupplicate(customerCode, setMenuCode, date)) {
+                System.out.println("Dupplicate data! This order is already saved.");
             } else {
-                System.out.println("Invalid choice, try again.");
+                double priceOfSet = Double.parseDouble(toOrder.getPrice());
+                String setPrice = FeastMenuList.formatPrice(priceOfSet);
+
+                int quantity = Inputter.quantity();
+
+                String totalCost = FeastMenuList.formatPrice(calculateTotalCost(setMenuCode, quantity));
+
+                int orderID = 0;
+                for (FeastOrder fo : feastorders) {
+                    if (fo.getOrderID() > orderID) {
+                        orderID = fo.getOrderID();
+                    }
+                }
+                orderID++;
+
+                FeastOrder newOrder = new FeastOrder(customerCode, date, setMenuCode, setPrice, quantity, orderID, totalCost);
+                feastorders.add(newOrder);
+
+                System.out.println("------------------------------------------------------------------------");
+                System.out.println("Customer order information  [Order ID: " + newOrder.getOrderID() + "]");
+                System.out.println("------------------------------------------------------------------------");
+                CustomerList.showCustomer(customerCode);
+                System.out.println("------------------------------------------------------------------------");
+                System.out.println("Code of Set Menu: " + newOrder.getSetMenuCode());
+                System.out.println("Set menu name   : " + toOrder.getName());
+                System.out.println("Event date      : " + newOrder.getDate());
+                System.out.println("Number of tables: " + newOrder.getNumberOfTable());
+                System.out.println("Price           : " + FeastMenuList.formatPrice(Double.parseDouble(toOrder.getPrice())) + " Vnd");
+                System.out.println("Ingredients     : \n" + FeastMenuList.formatIngredient(toOrder.getIngredient()));
+                System.out.println("------------------------------------------------------------------------");
+                System.out.println("Total cost      : " + newOrder.getTotalCost() + " Vnd");
+                System.out.println("------------------------------------------------------------------------");
+
+                writeToFile();
+            }
+            
+            Scanner sc = new Scanner(System.in);
+            while (true) {
+                System.out.print("Do you want to place another order (Y/N)?: ");
+                String answer = sc.nextLine();
+                if (answer.equalsIgnoreCase("Y")) {
+                    break;
+                } else if (answer.equalsIgnoreCase("N")) {
+                    System.out.println("You are back to main menu.");
+                    return;
+                } else {
+                    System.out.println("Invalid choice, try again.");
+                }
             }
         }
     }
@@ -98,101 +110,110 @@ public class FeastOrderList implements Serializable {
         int orderID = 0;
         FeastOrder FO;
         Scanner sc = new Scanner(System.in);
-        
-            while (true) {
-                System.out.println("Enter Order ID (integer number) to update:");
+
+        while (true) {
+            try {
+                System.out.print("Enter Order ID (integer number) to update: ");
                 orderID = sc.nextInt();
                 sc.nextLine();
-
                 FO = findOrderID(orderID);
-                if (FO != null) {
-                    if (isValidDate(FO.getDate()) == true) {
-                        System.out.println("Enter new information to update or press 'ENTER' to skip.");
-                        break;
-                    } else if (isValidDate(FO.getDate()) == false) {
-                        System.out.println("TRY ANOTHER ONE!");
-                    }
-                } else {
-                    System.out.println("This Order does not exist.");
-                }
-            }
-
-            //Menu Code
-            boolean found = false;
-            while (true) {
-                System.out.println("Enter new set menu code:");
-                String newMenuCode = sc.nextLine();
-
-                if (newMenuCode.isEmpty()) {
-                    System.out.println("Keeping old information.");
-                } else {
-                    for (FeastMenu fm : FeastMenuList.feastMenus) {
-                        if (newMenuCode.equalsIgnoreCase(fm.getMenuCode())) {
-                            FO.setSetMenuCode(newMenuCode);
-                            found = true;
-                            break;
-                        }
-                    }
+                if (FO == null) {
+                    System.out.println("This order is not exist, try again.");
+                    continue;
                 }
 
-                if (found) {
+                if (isValidDate(FO.getDate())) {
+                    System.out.println("Enter new information to update or press 'ENTER' to skip.");
                     break;
                 } else {
-                    System.out.println("Invalid menu set, try again.");
+                    System.out.println("TRY ANOTHER ONE!");
                 }
-            }
-            //Number of tables
-            while (true) {
-                try {
-                System.out.println("Enter new number of tables:");
-                int newNumberOfTables = sc.nextInt();
+
+            } catch (InputMismatchException e) {
+                System.out.println("Order ID must be an integer, try again.");
                 sc.nextLine();
-                if (Integer.toString(newNumberOfTables).isEmpty()) {
-                    System.out.println("Keeping old information.");
-                    break;
-                } else {
-                    if (newNumberOfTables > 0) {
-                        FO.setNumberOfTable(newNumberOfTables);
-                        break;
-                    } else {
-                        System.out.println("Invalid number, try again.");
-                    }
-                }
-                } catch (InputMismatchException e) {
-                    System.out.println("Invalid number, must be an integer greater than 0, try again.");
-                    sc.nextLine();
-                }
             }
-            //Event date
-            while (true) {
-                System.out.println("Enter new event date: (dd/MM/yyyy)");
-                String newDate = sc.nextLine();
-                if (newDate.isEmpty()) {
-                    System.out.println("Keeping old information.");
-                    break;
-                } else {
-                    if (isValidDate(newDate)) {
-                        FO.setDate(newDate);
+        }
+
+        //Menu Code
+        boolean found = false;
+        while (true) {
+            System.out.print("- Enter new set menu code (PW001 - PW006): ");
+            String newMenuCode = sc.nextLine();
+
+            if (newMenuCode.isEmpty()) {
+                System.out.println("Keeping old information.");
+                break;
+            } else {
+                for (FeastMenu fm : FeastMenuList.feastMenus) {
+                    if (newMenuCode.equalsIgnoreCase(fm.getMenuCode())) {
+                        FO.setSetMenuCode(newMenuCode);
+                        found = true;
                         break;
-                    } else {
-                        System.out.println("Invalid date, try again!");
                     }
                 }
             }
 
-            //TotalPrice
-            double totalPrice = 0;
-            for (FeastMenu fm : FeastMenuList.feastMenus) {
-                if (fm.getMenuCode().equalsIgnoreCase(FO.getSetMenuCode())) {
-                    totalPrice = FO.getNumberOfTable() * Double.parseDouble(fm.getPrice());
+            if (found) {
+                break;
+            } else {
+                System.out.println("Invalid menu set, try again.");
+            }
+        }
+        //Number of tables
+        while (true) {
+            try {
+                System.out.print("- Enter new number of tables: ");
+                String input = sc.nextLine();
+
+                if (input.isEmpty()) {
+                    System.out.println("Keeping old information.");
                     break;
                 }
-            }
-            FO.setTotalCost(FeastMenuList.formatPrice(totalPrice));
 
-            System.out.println("All information related to new set has been updated successfully!");
-            
-            while (true) {
+                int newNumberOfTables = Integer.parseInt(input);
+
+                if (newNumberOfTables > 0) {
+                    FO.setNumberOfTable(newNumberOfTables);
+                    break;
+                } else {
+                    System.out.println("Must be greater than 0, try again.");
+                }
+
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid number, must be an integer greater than 0, try again.");
+            }
+        }
+        //Event date
+        while (true) {
+            System.out.print("- Enter new event date (dd/MM/yyyy): ");
+            String newDate = sc.nextLine();
+            if (newDate.isEmpty()) {
+                System.out.println("Keeping old information.");
+                break;
+            } else {
+                if (isValidDate(newDate)) {
+                    FO.setDate(newDate);
+                    break;
+                } else {
+                    System.out.println("Invalid date, must follow dd/MM/yyyy, try again!");
+                }
+            }
+        }
+
+        //TotalPrice
+        double totalPrice = 0;
+        for (FeastMenu fm : FeastMenuList.feastMenus) {
+            if (fm.getMenuCode().equalsIgnoreCase(FO.getSetMenuCode())) {
+                totalPrice = FO.getNumberOfTable() * Double.parseDouble(fm.getPrice());
+                break;
+            }
+        }
+        FO.setTotalCost(FeastMenuList.formatPrice(totalPrice));
+
+        System.out.println("All information related to new set has been updated successfully!");
+
+        while (true) {
             System.out.println("Do you want to continue with another update? (Y/N)");
             String answer = sc.nextLine();
             if (answer.equalsIgnoreCase("y")) {
@@ -265,4 +286,14 @@ public class FeastOrderList implements Serializable {
         return 0;
     }
 
+    public static boolean checkDupplicate(String customerCode, String setMenu, String date) {
+        for (FeastOrder fo1 : feastorders) {
+            if (customerCode.equalsIgnoreCase(fo1.getCustomerCode())
+                    && (setMenu.equalsIgnoreCase(fo1.getSetMenuCode()))
+                    && (date.equalsIgnoreCase(fo1.getDate()))) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

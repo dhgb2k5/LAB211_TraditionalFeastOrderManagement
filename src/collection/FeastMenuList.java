@@ -8,6 +8,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 public class FeastMenuList {
 
@@ -52,15 +54,15 @@ public class FeastMenuList {
     }
 
     public static void showAll() {
-        System.out.println("------------------------------------------------------------------------");
+        System.out.println("-------------------------------------------------------------------------------------");
         System.out.println("List of Set Menus for ordering party:");
-        System.out.println("------------------------------------------------------------------------");
+        System.out.println("-------------------------------------------------------------------------------------");
         for (FeastMenu fm : feastMenus) {
             System.out.println("Code       : " + fm.getMenuCode());
             System.out.println("Name       : " + fm.getName());
             System.out.println("Price      : " + formatPrice(Double.parseDouble(fm.getPrice())));
             System.out.println("Ingredients: \n" + formatIngredient(fm.getIngredient()));
-            System.out.println("------------------------------------------------------------------------");
+            System.out.println("-------------------------------------------------------------------------------------");
         }
     }
     
@@ -76,7 +78,22 @@ public class FeastMenuList {
                 return fm;
             }
         }
-        System.out.println("LỒN DANH");
         return null;
+    }
+    
+    public static void displayFeastMenu() {
+        HashMap<String, String> menus = new HashMap<>();
+        for (FeastMenu fm : feastMenus) {
+            String setCode = fm.getMenuCode();
+            String setName = fm.getName();
+            if (!menus.containsKey(setCode)) {
+                menus.put(setCode, setName);
+            }
+        }
+        System.out.println("Menus List:");
+        
+        for (Map.Entry<String, String> menu : menus.entrySet()) {
+            System.out.println(menu.getKey() + " - " + menu.getValue());
+        }
     }
 }

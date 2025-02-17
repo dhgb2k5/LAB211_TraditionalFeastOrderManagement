@@ -16,11 +16,10 @@ import tool.Inputter;
 public class CustomerList {
 
     public static ArrayList<Customer> customers = new ArrayList<>();
-   
+
     public static void addCustomer() {
-        Scanner sc = new Scanner(System.in);
-        String answer = "";
-        do {
+        while (true) {
+
             String id = Inputter.getCustomerID();
             String name = formatName(Inputter.inputName());
             String phoneNumber = Inputter.inputPhoneNumber();
@@ -29,42 +28,56 @@ public class CustomerList {
             customers.add(new Customer(id, name, phoneNumber, email));
 
             System.out.println("This customer has been registered.");
-            System.out.println("Do you want to add new customer? (Y/N)");
-            answer = sc.nextLine();
-            if (answer.equalsIgnoreCase("n")) {
-                break;
-            } else if (answer.equalsIgnoreCase("y")) {
-            } else {
-                System.out.println("Your choice is invalid, try again.");
+            writeToFile();
+
+            Scanner sc = new Scanner(System.in);
+            while (true) {
+                System.out.print("Do you want to add new customer (Y/N)?: ");
+                String answer = sc.nextLine();
+                if (answer.equalsIgnoreCase("n")) {
+                    System.out.println("You are back to menu.");
+                    return;
+                } else if (answer.equalsIgnoreCase("y")) {
+                    break;
+                } else {
+                    System.out.println("Your choice is invalid, try again.");
+                }
             }
-        } while (true);
+        }
     }
 
     public static void updateCustomer() {
-        Customer result = null;
+        Customer foundCustomer = null;
         Scanner sc = new Scanner(System.in);
+
         while (true) {
-            System.out.println("Enter customer code to find:");
+            System.out.print("Enter customer code to find: ");
             String idToFind = sc.nextLine();
-            result = findCustomerByCode(idToFind);
-            if (result != null) {
+            foundCustomer = findCustomerByCode(idToFind);
+
+            if (foundCustomer == null) {
+                System.out.println("This customer does not exist. Try again.");
+            } else {
+                System.out.println("This customer does not exist, try again.");
+                System.out.println("----------------------------------");
+                System.out.println("| 1 customer has found:          |");
+                System.out.println("----------------------------------");
+                showCustomer(idToFind);
+                System.out.println("----------------------------------");
                 System.out.println("Enter new information to update or press 'ENTER' to skip.");
                 break;
-            } else {
-                System.out.println("No customer is found, try again.");
             }
         }
 
         //name
         while (true) {
-            String newName = "";
-            System.out.println("Enter new name to update:");
-            newName = sc.nextLine();
-            if (newName.equals("")) {
+            System.out.print("- Enter new name to update: ");
+            String newName = sc.nextLine();
+            if (newName.isEmpty()) {
                 System.out.println("Keeping old information.");
                 break;
             } else if (Inputter.isValid(newName, Acceptable.NAME_VALID)) {
-                result.setName(formatName(newName));
+                foundCustomer.setName(formatName(newName));
                 break;
             } else {
                 System.out.println("This new name is invalid, try again.");
@@ -73,14 +86,14 @@ public class CustomerList {
 
         //phoneNumber
         while (true) {
-            String newPhoneNumber = "";
-            System.out.println("Enter new phone number to update:");
-            newPhoneNumber = sc.nextLine();
-            if (newPhoneNumber.equals("")) {
+            System.out.print("- Enter new phone number to update: ");
+            String newPhoneNumber = sc.nextLine();
+            if (newPhoneNumber.isEmpty()) {
                 System.out.println("Keeping old information.");
                 break;
             } else if (Inputter.isValid(newPhoneNumber, Acceptable.PHONE_VALID)) {
-                result.setPhoneNumber(newPhoneNumber);
+                foundCustomer.setPhoneNumber(newPhoneNumber);
+                break;
             } else {
                 System.out.println("This new phone number is invalid, try again.");
             }
@@ -88,41 +101,51 @@ public class CustomerList {
 
         //email
         while (true) {
-            String newEmail = "";
-            System.out.println("Enter new email to update:");
-            newEmail = sc.nextLine();
-            if (newEmail.equals("")) {
+            System.out.print("- Enter new email to update: ");
+            String newEmail = sc.nextLine();
+            if (newEmail.isEmpty()) {
                 System.out.println("Keeping old information.");
                 break;
             } else if (Inputter.isValid(newEmail, Acceptable.EMAIL_VALID)) {
-                result.setEmail(newEmail);
+                foundCustomer.setEmail(newEmail);
                 break;
             } else {
                 System.out.println("This new email is invalid, try again.");
             }
         }
+
+        System.out.println("This customer has been updated.");
+        writeToFile();
+
+        while (true) {
+            System.out.print("Do you want to continue to update (Y/N)?: ");
+            String answer = sc.nextLine();
+            if (answer.equalsIgnoreCase("n")) {
+                System.out.println("You are back to main menu.");
+                break;
+            } else if (answer.equalsIgnoreCase("y")) {
+                updateCustomer();
+                break;
+            } else {
+                System.out.println("Your choice is invalid, try again.");
+            }
+        }
     }
 
     public static Customer findCustomerByCode(String id) {
-        Customer toFind = null;
         for (Customer customer : customers) {
             if (customer.getCustomerCode().equalsIgnoreCase(id)) {
-                toFind = customer;
-                break;
+                return customer;
             }
         }
-
-        if (toFind == null) {
-            System.out.println("No customer matches criteria!");
-        }
-        return toFind;
+        return null;
     }
 
     public static void findCustomerByName() {
         Scanner sc = new Scanner(System.in);
-        
+
         ArrayList<Customer> toFind = new ArrayList<>();
-        System.out.println("Enter customer name to find:");
+        System.out.print("- Enter customer name to find: ");
         String name = sc.nextLine();
         for (Customer customer : customers) {
             if (customer.getName().toLowerCase().contains(name)) {
@@ -175,7 +198,6 @@ public class CustomerList {
         try (FileOutputStream fos = new FileOutputStream(filePath);
                 ObjectOutputStream oos = new ObjectOutputStream(fos)) {
             oos.writeObject(customers);
-            System.out.println("All registrations are saved to 'customers.dat' successfully.");
         } catch (IOException e) {
             e.printStackTrace();
         }
