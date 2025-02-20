@@ -8,6 +8,7 @@ public class Customer implements Serializable, Comparable<Customer> {
     private String name;
     private String phoneNumber;
     private String email;
+    private String membership;
 
     public Customer() {
     }
@@ -16,11 +17,12 @@ public class Customer implements Serializable, Comparable<Customer> {
         this.customerCode = customerCode;
     }
 
-    public Customer(String customerCode, String name, String phoneNumber, String email) {
+    public Customer(String customerCode, String name, String phoneNumber, String email, String membership) {
         this.customerCode = customerCode;
         this.name = name;
         this.phoneNumber = phoneNumber;
         this.email = email;
+        this.membership = membership;
     }
 
     public String getCustomerCode() {
@@ -55,9 +57,17 @@ public class Customer implements Serializable, Comparable<Customer> {
         this.email = email;
     }
 
+    public String getMembership() {
+        return membership;
+    }
+
+    public void setMembership(String membership) {
+        this.membership = membership;
+    }
+
     @Override
     public String toString() {
-        return String.format("| %-7s| %-22s| %-13s| %-20s|", customerCode, name, phoneNumber, email);
+        return String.format("| %-7s| %-22s| %-13s| %-20s| %-12s |", customerCode, name, phoneNumber, email, membership);
     }
 
     @Override

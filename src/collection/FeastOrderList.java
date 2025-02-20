@@ -17,6 +17,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Collections;
 import java.util.InputMismatchException;
+import model.Customer;
 
 public class FeastOrderList implements Serializable {
 
@@ -28,12 +29,17 @@ public class FeastOrderList implements Serializable {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
             LocalDate dateToCheck = LocalDate.parse(date, formatter);
 
-            if (dateToCheck.isEqual(LocalDate.now())) {
-                System.out.println("This order comes today, can not modify.");
-                return false;
-            } else if (dateToCheck.isBefore(LocalDate.now())) {
+            // Nếu ngày trong quá khứ => không hợp lệ
+            if (dateToCheck.isBefore(LocalDate.now())) {
                 System.out.println("Invalid date.");
+                return false;
             }
+
+            // Nếu ngày hiện tại (cho phép)
+            if (dateToCheck.isEqual(LocalDate.now())) {
+                System.out.println("Warning: The order is scheduled for today.");
+            }
+
             return true;
         } catch (DateTimeParseException e) {
             System.out.println("Invalid date format, must be dd/MM/yyyy.");
@@ -59,7 +65,7 @@ public class FeastOrderList implements Serializable {
 
                 int quantity = Inputter.quantity();
 
-                String totalCost = FeastMenuList.formatPrice(calculateTotalCost(setMenuCode, quantity));
+                
 
                 int orderID = 0;
                 for (FeastOrder fo : feastorders) {
@@ -68,8 +74,13 @@ public class FeastOrderList implements Serializable {
                     }
                 }
                 orderID++;
-
-                FeastOrder newOrder = new FeastOrder(customerCode, date, setMenuCode, setPrice, quantity, orderID, totalCost);
+                Customer customer = CustomerList.findCustomerByCode(customerCode);
+                String membership = customer.getMembership();
+                
+                
+                String totalCost =FeastMenuList.formatPrice(priceOfSet * quantity * calculateTotalCost(customer.getMembership()));
+                
+                FeastOrder newOrder = new FeastOrder(customerCode, date, setMenuCode, setPrice, quantity, orderID, totalCost, membership);
                 feastorders.add(newOrder);
 
                 System.out.println("------------------------------------------------------------------------");
@@ -89,20 +100,6 @@ public class FeastOrderList implements Serializable {
 
                 writeToFile();
             }
-            
-            Scanner sc = new Scanner(System.in);
-            while (true) {
-                System.out.print("Do you want to place another order (Y/N)?: ");
-                String answer = sc.nextLine();
-                if (answer.equalsIgnoreCase("Y")) {
-                    break;
-                } else if (answer.equalsIgnoreCase("N")) {
-                    System.out.println("You are back to main menu.");
-                    return;
-                } else {
-                    System.out.println("Invalid choice, try again.");
-                }
-            }
         }
     }
 
@@ -118,15 +115,20 @@ public class FeastOrderList implements Serializable {
                 sc.nextLine();
                 FO = findOrderID(orderID);
                 if (FO == null) {
-                    System.out.println("This order is not exist, try again.");
+                    System.out.println("This order does not exist, try again.");
                     continue;
                 }
 
-                if (isValidDate(FO.getDate())) {
-                    System.out.println("Enter new information to update or press 'ENTER' to skip.");
-                    break;
+                if (!isValidDate(FO.getDate())) {
+                    if (continueUpdate()) {
+                        continue;
+                    } else {
+                        return;
+                    }
+
                 } else {
-                    System.out.println("TRY ANOTHER ONE!");
+                    System.out.println("Enter new information to update or 'PRESS ENTER' to skip this information.");
+                    break;
                 }
 
             } catch (InputMismatchException e) {
@@ -212,18 +214,8 @@ public class FeastOrderList implements Serializable {
         FO.setTotalCost(FeastMenuList.formatPrice(totalPrice));
 
         System.out.println("All information related to new set has been updated successfully!");
-
-        while (true) {
-            System.out.println("Do you want to continue with another update? (Y/N)");
-            String answer = sc.nextLine();
-            if (answer.equalsIgnoreCase("y")) {
-                updateOrderInformation();
-            } else if (answer.equalsIgnoreCase("n")) {
-                break;
-            } else {
-                System.out.println("Invalid stament, try again.");
-            }
-        }
+        writeToFile();
+        continueUpdate();
     }
 
     public static FeastOrder findOrderID(int id) {
@@ -268,13 +260,13 @@ public class FeastOrderList implements Serializable {
         Collections.sort(feastorders);
 
         System.out.println("Orders information:");
-        System.out.println("-------------------------------------------------------------------------------------");
-        System.out.println("| ID    | Event date   | Customer ID | Set Menu | Price      | Tables  | Cost       |");
-        System.out.println("-------------------------------------------------------------------------------------");
+        System.out.println("--------------------------------------------------------------------------------------------------");
+        System.out.println("| ID    | Event date   | Customer ID | Set Menu | Price      | Tables  | Cost       | Membership |");
+        System.out.println("--------------------------------------------------------------------------------------------------");
         for (FeastOrder fo : feastorders) {
             System.out.println(fo);
         }
-        System.out.println("-------------------------------------------------------------------------------------");
+        System.out.println("--------------------------------------------------------------------------------------------------");
     }
 
     public static double calculateTotalCost(String setMenuCode, int quantity) {
@@ -295,5 +287,28 @@ public class FeastOrderList implements Serializable {
             }
         }
         return false;
+    }
+
+    public static boolean continueUpdate() {
+        Scanner sc = new Scanner(System.in);
+        while (true) {
+            System.out.print("Do you want to place another order (Y/N)?: ");
+            String answer = sc.nextLine();
+            if (answer.equalsIgnoreCase("Y")) {
+                return true;
+            } else if (answer.equalsIgnoreCase("N")) {
+                System.out.println("You are back to main menu.");
+                return false;
+            } else {
+                System.out.println("Invalid choice, try again.");
+            }
+        }
+    }
+    
+    public static double calculateTotalCost(String membership) {
+        if (membership.equalsIgnoreCase("true")) {
+            return 0.8;
+        }
+        return 1;
     }
 }

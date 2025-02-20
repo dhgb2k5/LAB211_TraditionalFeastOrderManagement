@@ -5,6 +5,7 @@ import menu.Menu;
 import collection.CustomerList;
 import collection.FeastMenuList;
 import collection.FeastOrderList;
+import collection.NhanViens;
 import java.util.InputMismatchException;
 import tool.Inputter;
 
@@ -15,6 +16,7 @@ public class main {
         CustomerList.readFromFile();
         FeastOrderList.readFromFile();
         FeastMenuList.readFromFile();
+        NhanViens.readFromFile();
         Scanner sc = new Scanner(System.in);
         int choice = 0;
         do {
@@ -50,13 +52,17 @@ public class main {
                     case 8:
                         Inputter.displayFile();
                         break;
+                    case 9:
+                        NhanViens.addNhanVien();
+                        break;
                     default:
-                        System.out.println("Your choice is invalid, must be 1-8, try again!");  
+                        System.out.println("EXIT!!");
+                        break;
                 }
             } catch (InputMismatchException e) {
-                System.out.println("Invalid choice, your choice must be an integer (1-8).");
+                System.out.println("EXIT!!!");
                 sc.nextLine();
             }
-        } while (choice > 0 && choice < 9);
+        } while (choice > 0 && choice < 10);
     }
 }

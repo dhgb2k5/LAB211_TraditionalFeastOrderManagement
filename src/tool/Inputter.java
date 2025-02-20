@@ -7,6 +7,7 @@ import model.Customer;
 import collection.CustomerList;
 import collection.FeastMenuList;
 import collection.FeastOrderList;
+import collection.NhanViens;
 import java.time.DateTimeException;
 import model.FeastMenu;
 import java.time.LocalDate;
@@ -105,6 +106,42 @@ public class Inputter {
         }
     }
 
+    public static String inputMembership() {
+        Scanner sc = new Scanner(System.in);
+        System.out.print("Enter tier of membership: ");
+        String x = sc.nextLine();
+        return x;
+    }
+
+    public static String session() {
+        Scanner sc = new Scanner(System.in);
+        String time = "";
+        do {
+            System.out.println("Choose working session!");
+            System.out.println("1. Ca 1");
+            System.out.println("2. Ca 2");
+            System.out.println("3. Fulltime");
+
+            int choice = sc.nextInt();
+            sc.nextLine();
+            switch (choice) {
+                case 1:
+                    time = "Ca 1";
+                    break;
+                case 2:
+                    time = "Ca 2";
+                    break;
+                case 3:
+                    time = "Ca 3";
+                    break;
+                default:
+                    System.out.println("Invalid choice, try again.");
+            }
+        } while (choice > 0 && choice < 4);
+        return time;
+
+    }
+
     public static String findCustomerCode() {
         Scanner sc = new Scanner(System.in);
         String cusCode = "";
@@ -200,8 +237,9 @@ public class Inputter {
                 System.out.println("=============MENU=============");
                 System.out.println("1. Display Customers List");
                 System.out.println("2. Display Orders List");
+                System.out.println("3. Display NhanVien List");
                 System.out.println("==============================");
-                System.out.print("Choose table to display (1 or 2): ");
+                System.out.print("Choose table to display (1 => 3): ");
                 int choice = sc.nextInt();
                 sc.nextLine();
 
@@ -213,6 +251,9 @@ public class Inputter {
                     System.out.println("Orders data:");
                     FeastOrderList.showOrderList();
                     break;
+                } else if (choice ==3) {
+                    System.out.println("NhanVien data:");
+                    NhanViens.showCustomerList(NhanViens.nvs);
                 } else {
                     System.out.println("Invalid choice, try again!");
                 }

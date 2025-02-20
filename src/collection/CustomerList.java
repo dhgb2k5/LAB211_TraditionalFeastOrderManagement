@@ -19,13 +19,13 @@ public class CustomerList {
 
     public static void addCustomer() {
         while (true) {
-
             String id = Inputter.getCustomerID();
             String name = formatName(Inputter.inputName());
             String phoneNumber = Inputter.inputPhoneNumber();
             String email = Inputter.inputEmail();
+            String membership = Inputter.inputMembership();
 
-            customers.add(new Customer(id, name, phoneNumber, email));
+            customers.add(new Customer(id, name, phoneNumber, email, membership));
 
             System.out.println("This customer has been registered.");
             writeToFile();
@@ -176,13 +176,13 @@ public class CustomerList {
     public static void showCustomerList(ArrayList<Customer> list) {
         Collections.sort(list);
 
-        System.out.println("-----------------------------------------------------------------------");
-        System.out.println("|  Code  | Customer Name         | Phone        | Email               |");
-        System.out.println("-----------------------------------------------------------------------");
+        System.out.println("--------------------------------------------------------------------------------------");
+        System.out.println("|  Code  | Customer Name         | Phone        | Email               | Memembership |");
+        System.out.println("--------------------------------------------------------------------------------------");
         for (Customer x : list) {
             System.out.println(x);
         }
-        System.out.println("-----------------------------------------------------------------------");
+        System.out.println("--------------------------------------------------------------------------------------");
     }
 
     public static void showCustomer(String id) {
@@ -220,4 +220,6 @@ public class CustomerList {
         writeToFile();
         System.out.println("Customer data has been successfully saved to 'customers.dat'");
     }
+    
+    
 }

@@ -10,13 +10,14 @@ public class FeastOrder implements Comparable<FeastOrder>, Serializable{
     private int orderID;
     private String setPrice;
     private String totalCost;
+    private String membership;
     
 
     public FeastOrder() {
         super();
     }
 
-    public FeastOrder(String customerCode, String date, String setMenuCode, String setPrice,int numberOfTable, int orderID,  String totalCost) {
+    public FeastOrder(String customerCode, String date, String setMenuCode, String setPrice,int numberOfTable, int orderID,  String totalCost, String membership) {
         this.customerCode = customerCode;
         this.setMenuCode = setMenuCode;
         this.numberOfTable = numberOfTable;
@@ -24,6 +25,7 @@ public class FeastOrder implements Comparable<FeastOrder>, Serializable{
         this.date = date;
         this.orderID = orderID;
         this.totalCost = totalCost;
+        this.membership = membership;
     }
 
     public String getCustomerCode() {
@@ -81,11 +83,19 @@ public class FeastOrder implements Comparable<FeastOrder>, Serializable{
     public void setTotalCost(String totalCost) {
         this.totalCost = totalCost;
     }
+
+    public String getMembership() {
+        return membership;
+    }
+
+    public void setMembership(String membership) {
+        this.membership = membership;
+    }
     
     @Override
     public String toString() {
-        return String.format("| %-5s | %-12s | %-11s | %-8s | %-10s | %-7s | %-10s |",
-                getCustomerCode(),getDate(),getCustomerCode(),getSetMenuCode(),getSetPrice(),getNumberOfTable(),getTotalCost());
+        return String.format("| %-5s | %-12s | %-11s | %-8s | %-10s | %-7s | %-10s | %-10s |",
+                getCustomerCode(),getDate(),getCustomerCode(),getSetMenuCode(),getSetPrice(),getNumberOfTable(),getTotalCost(),getMembership());
     }
 
     @Override
